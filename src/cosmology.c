@@ -24,7 +24,7 @@
 
 /* This object's header. */
 #include "cosmology.h"
-
+#include <stdio.h>
 /* Some standard headers */
 #include <math.h>
 
@@ -182,16 +182,81 @@ __attribute__((const)) static INLINE double w_tilde(const double a,
  * @param wa The equation of state evolution parameter.
  * @param a The current scale-factor.
  */
-__attribute__((const)) static INLINE double E(
-    const double Omega_r, const double Omega_m, const double Omega_k,
-    const double Omega_l, const double w0, const double wa, const double a) {
+__attribute__((const)) static INLINE double E(const double a) {
 
   const double a_inv = 1. / a;
 
-  return sqrt(Omega_r * a_inv * a_inv * a_inv * a_inv + /* Radiation */
-              Omega_m * a_inv * a_inv * a_inv +         /* Matter */
-              Omega_k * a_inv * a_inv +                 /* Curvature */
-              Omega_l * exp(3. * w_tilde(a, w0, wa)));  /* Lambda */
+  double get_value(double x)
+  {
+      #define MAXC 1024  
+
+      static const double xs[MAXC] = {0};
+      static const double ys[MAXC] = {0};
+
+
+  size_t coefficients (FILE *fp, double *xs, double *ys)
+  {
+      char buf[MAXC];         /* buffer for reading each line */ 
+      size_t ncoeff = 0;      /* number of coefficient pairs read */
+
+      while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
+        /* if it contains 2 double values */
+          if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
+              ncoeff++;       /* increment counter */
+
+      return ncoeff;          /* return total count of pairs read */
+  }
+
+    size_t n = 0;                           /* count of doubles returned */
+    /* use filename provided as 1st argument (stdin by default) */
+    FILE *fp;
+    fp =  fopen ("hubble_table.txt", "r");
+
+    if (!fp) {  /* validate file open for reading */
+        perror ("file open failed");
+        return 1;
+    }
+
+    if (!(n = coefficients (fp, xs, ys))) {   /* validate coeff pairs read */
+        fputs ("error: no double values read from file.\n", stderr);
+        return 1;
+    }
+
+    if (fp != stdin)   /* close file if not stdin */
+        fclose (fp);
+
+    /* number of elements in the array */
+    static const int count = sizeof(xs)/sizeof(xs[0]);
+
+    int i;
+    double dx, dy;
+
+    if (x < xs[0]) {
+        /* x is less than the minimum element
+         * handle error here if you want */
+        return ys[0]; /* return minimum element */
+    }
+
+    if (x > xs[count-1]) {
+        return ys[count-1]; /* return maximum */
+    }
+
+    /* find i, such that xs[i] <= x < xs[i+1] */
+    for (i = 0; i < count-1; i++) {
+        if (xs[i+1] > x) {
+            break;
+        }
+    }
+
+    /* interpolate */
+    dx = xs[i+1] - xs[i];
+    dy = ys[i+1] - ys[i];
+    return ys[i] + (x - xs[i]) * dy / dx;
+}
+
+
+  
+  return  get_value(double a);  /* Lambda */
 }
 
 /**
@@ -264,7 +329,7 @@ void cosmology_update(struct cosmology *c, const struct phys_const *phys_const,
   const double Omega_l = c->Omega_lambda;
   const double w0 = c->w_0;
   const double wa = c->w_a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w0, wa, a);
+  const double E_z = E(a);
 
   /* H(z) */
   c->H = c->H0 * E_z;
@@ -318,7 +383,7 @@ double drift_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E(a);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv * a_inv * a_inv;
@@ -343,7 +408,7 @@ double gravity_kick_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E(a);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv * a_inv;
@@ -368,7 +433,7 @@ double comoving_distance_integrand(double a, void *param) {
   const double H0 = c->H0;
   const double const_speed_light_c = c->const_speed_light_c;
   const double a_inv = 1. / a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E(a);
   const double H = H0 * E_z;
 
   return (const_speed_light_c / H) * a_inv * a_inv;
@@ -393,7 +458,7 @@ double hydro_kick_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E(a);
   const double H = H0 * E_z;
 
   /* Note: we can't use the pre-defined pow_gamma_xxx() function as
@@ -419,7 +484,7 @@ double hydro_kick_corr_integrand(double a, void *param) {
   const double w_a = c->w_a;
   const double H0 = c->H0;
 
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E(a);
   const double H = H0 * E_z;
 
   return 1. / H;
@@ -444,7 +509,7 @@ double time_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(Omega_r, Omega_m, Omega_k, Omega_l, w_0, w_a, a);
+  const double E_z = E( a);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv;
