@@ -27,6 +27,9 @@
 #include <stdio.h>
 /* Some standard headers */
 #include <math.h>
+#include <string.h>
+
+#define MAXC 50000  /* if you need a constant, #define one (or more) */
 
 /* Local headers */
 #include "adiabatic_index.h"
@@ -182,81 +185,39 @@ __attribute__((const)) static INLINE double w_tilde(const double a,
  * @param wa The equation of state evolution parameter.
  * @param a The current scale-factor.
  */
-__attribute__((const)) static INLINE double E(const double a) {
+ 
 
-  const double a_inv = 1. / a;
+static INLINE double E(const double a, const struct cosmology *c) {
 
-  double get_value(double x)
-  {
-      #define MAXC 1024  
+    
+  /* number of elements in the array */
+  const int count = MAXC;
 
-      static const double xs[MAXC] = {0};
-      static const double ys[MAXC] = {0};
-
-
-  size_t coefficients (FILE *fp, double *xs, double *ys)
-  {
-      char buf[MAXC];         /* buffer for reading each line */ 
-      size_t ncoeff = 0;      /* number of coefficient pairs read */
-
-      while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
-        /* if it contains 2 double values */
-          if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
-              ncoeff++;       /* increment counter */
-
-      return ncoeff;          /* return total count of pairs read */
-  }
-
-    size_t n = 0;                           /* count of doubles returned */
-    /* use filename provided as 1st argument (stdin by default) */
-    FILE *fp;
-    fp =  fopen ("hubble_table.txt", "r");
-
-    if (!fp) {  /* validate file open for reading */
-        perror ("file open failed");
-        return 1;
-    }
-
-    if (!(n = coefficients (fp, xs, ys))) {   /* validate coeff pairs read */
-        fputs ("error: no double values read from file.\n", stderr);
-        return 1;
-    }
-
-    if (fp != stdin)   /* close file if not stdin */
-        fclose (fp);
-
-    /* number of elements in the array */
-    static const int count = sizeof(xs)/sizeof(xs[0]);
-
-    int i;
-    double dx, dy;
-
-    if (x < xs[0]) {
-        /* x is less than the minimum element
-         * handle error here if you want */
-        return ys[0]; /* return minimum element */
-    }
-
-    if (x > xs[count-1]) {
-        return ys[count-1]; /* return maximum */
-    }
-
-    /* find i, such that xs[i] <= x < xs[i+1] */
-    for (i = 0; i < count-1; i++) {
-        if (xs[i+1] > x) {
-            break;
-        }
-    }
-
-    /* interpolate */
-    dx = xs[i+1] - xs[i];
-    dy = ys[i+1] - ys[i];
-    return ys[i] + (x - xs[i]) * dy / dx;
-}
-
-
+  int i;
   
-  return  get_value(double a);  /* Lambda */
+  if (a < c->xs[0]) {
+    /* x is less than the minimum element
+     * handle error here if you want */
+    return c->ys[0]; /* return minimum element */
+  }
+  
+  if (a > c->xs[count-1]) {
+    return c->ys[count-1]; /* return maximum */
+  }
+  
+  /* find i, such that xs[i] <= x < xs[i+1] */
+  for (i = 0; i < count-1; i++) {
+    if (c->xs[i+1] > a) {
+      break;
+    }
+  }
+  
+  /* interpolate */
+  const double dx = c->xs[i+1] - c->xs[i];
+  const double dy = c->ys[i+1] - c->ys[i];
+   
+  
+  return c->ys[i] + (a - c->xs[i]) * dy / dx;  /* Lambda */
 }
 
 /**
@@ -329,7 +290,7 @@ void cosmology_update(struct cosmology *c, const struct phys_const *phys_const,
   const double Omega_l = c->Omega_lambda;
   const double w0 = c->w_0;
   const double wa = c->w_a;
-  const double E_z = E(a);
+  const double E_z = E(a,c);
 
   /* H(z) */
   c->H = c->H0 * E_z;
@@ -383,7 +344,7 @@ double drift_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv * a_inv * a_inv;
@@ -408,7 +369,7 @@ double gravity_kick_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv * a_inv;
@@ -433,7 +394,7 @@ double comoving_distance_integrand(double a, void *param) {
   const double H0 = c->H0;
   const double const_speed_light_c = c->const_speed_light_c;
   const double a_inv = 1. / a;
-  const double E_z = E(a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   return (const_speed_light_c / H) * a_inv * a_inv;
@@ -458,7 +419,7 @@ double hydro_kick_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E(a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   /* Note: we can't use the pre-defined pow_gamma_xxx() function as
@@ -484,7 +445,7 @@ double hydro_kick_corr_integrand(double a, void *param) {
   const double w_a = c->w_a;
   const double H0 = c->H0;
 
-  const double E_z = E(a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   return 1. / H;
@@ -509,7 +470,7 @@ double time_integrand(double a, void *param) {
   const double H0 = c->H0;
 
   const double a_inv = 1. / a;
-  const double E_z = E( a);
+  const double E_z = E(a,c);
   const double H = H0 * E_z;
 
   return (1. / H) * a_inv;
@@ -573,12 +534,12 @@ double neutrino_density_integrate(gsl_integration_workspace *space, double y) {
   gsl_function F1 = {&neutrino_density_integrand, &y};
   gsl_function F2 = {&neutrino_density_integrand_transformed, &y};
   /* Integrate between 0 and 1 */
-  gsl_integration_qag(&F1, 0.0, 1.0, 0, 1.0e-13, GSL_workspace_size,
+  gsl_integration_qag(&F1, 0.0, 1.0, 0, 1.0e-10, GSL_workspace_size,
                       GSL_INTEG_GAUSS61, space, &intermediate, &abserr);
 
   result += intermediate;
   /* Integrate between 1 and infinity */
-  gsl_integration_qag(&F2, 0.0, 1.0, 0, 1.0e-13, GSL_workspace_size,
+  gsl_integration_qag(&F2, 0.0, 1.0, 0, 1.0e-10, GSL_workspace_size,
                       GSL_INTEG_GAUSS61, space, &intermediate, &abserr);
   result += intermediate;
 
@@ -757,7 +718,7 @@ void cosmology_init_tables(struct cosmology *c) {
   /* Integrate the drift factor \int_{a_begin}^{a_table[i]} dt/a^2 */
   gsl_function F = {&drift_integrand, c};
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
@@ -767,7 +728,7 @@ void cosmology_init_tables(struct cosmology *c) {
   /* Integrate the kick factor \int_{a_begin}^{a_table[i]} dt/a */
   F.function = &gravity_kick_integrand;
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
@@ -777,7 +738,7 @@ void cosmology_init_tables(struct cosmology *c) {
   /* Integrate the kick factor \int_{a_begin}^{a_table[i]} dt/a^(3(g-1)+1) */
   F.function = &hydro_kick_integrand;
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
@@ -787,7 +748,7 @@ void cosmology_init_tables(struct cosmology *c) {
   /* Integrate the kick correction factor \int_{a_begin}^{a_table[i]} a dt */
   F.function = &hydro_kick_corr_integrand;
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
@@ -797,32 +758,32 @@ void cosmology_init_tables(struct cosmology *c) {
   /* Integrate the time \int_{a_begin}^{a_table[i]} dt */
   F.function = &time_integrand;
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
     c->time_interp_table[i] = result;
   }
 
-  /* Integrate the time \int_{0}^{a_begin} dt */
-  gsl_integration_qag(&F, 0., a_begin, 0, 1.0e-10, GSL_workspace_size,
-                      GSL_INTEG_GAUSS61, space, &result, &abserr);
-  c->time_interp_table_offset = result;
+  /* /\* Integrate the time \int_{0}^{a_begin} dt *\/ */
+  /* gsl_integration_qag(&F, 0., a_begin, 0, 1.0e-4, GSL_workspace_size, */
+  /*                     GSL_INTEG_GAUSS61, space, &result, &abserr); */
+  /* c->time_interp_table_offset = result; */
 
-  /* Integrate the time \int_{0}^{a_end} dt */
-  gsl_integration_qag(&F, 0., a_end, 0, 1.0e-10, GSL_workspace_size,
-                      GSL_INTEG_GAUSS61, space, &result, &abserr);
-  c->time_interp_table_max = result;
+  /* /\* Integrate the time \int_{0}^{a_end} dt *\/ */
+  /* gsl_integration_qag(&F, 0., a_end, 0, 1.0e-4, GSL_workspace_size, */
+  /*                     GSL_INTEG_GAUSS61, space, &result, &abserr); */
+  /* c->time_interp_table_max = result; */
 
-  /* Integrate the time \int_{0}^{1} dt */
-  gsl_integration_qag(&F, 0., 1, 0, 1.0e-13, GSL_workspace_size,
-                      GSL_INTEG_GAUSS61, space, &result, &abserr);
-  c->universe_age_at_present_day = result;
+  /* /\* Integrate the time \int_{0}^{1} dt *\/ */
+  /* gsl_integration_qag(&F, 0., 1, 0, 1.0e-4, GSL_workspace_size, */
+  /*                     GSL_INTEG_GAUSS61, space, &result, &abserr); */
+  /* c->universe_age_at_present_day = result; */
 
   /* Integrate the comoving distance \int_{a_begin}^{a_table[i]} c dt/a */
   F.function = &comoving_distance_integrand;
   for (int i = 0; i < cosmology_table_length; i++) {
-    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-10, GSL_workspace_size,
+    gsl_integration_qag(&F, a_begin, a_table[i], 0, 1.0e-4, GSL_workspace_size,
                         GSL_INTEG_GAUSS61, space, &result, &abserr);
 
     /* Store result */
@@ -831,13 +792,13 @@ void cosmology_init_tables(struct cosmology *c) {
 
   /* Integrate the comoving distance \int_{a_begin}^{1.0} c dt/a */
   F.function = &comoving_distance_integrand;
-  gsl_integration_qag(&F, a_begin, 1.0, 0, 1.0e-10, GSL_workspace_size,
+  gsl_integration_qag(&F, a_begin, 1.0, 0, 1.0e-4, GSL_workspace_size,
                       GSL_INTEG_GAUSS61, space, &result, &abserr);
   c->comoving_distance_interp_table_offset = result;
 
   /* Integrate the comoving distance \int_{a_begin}^{a_end} c dt/a */
   F.function = &comoving_distance_integrand;
-  gsl_integration_qag(&F, a_begin, a_end, 0, 1.0e-10, GSL_workspace_size,
+  gsl_integration_qag(&F, a_begin, a_end, 0, 1.0e-4, GSL_workspace_size,
                       GSL_INTEG_GAUSS61, space, &result, &abserr);
   c->comoving_distance_start_to_end = result;
 
@@ -984,6 +945,54 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
   if (c->a_begin >= c->a_end)
     error("a_begin must be strictly before (and not equal to) a_end");
 
+  size_t coefficients (FILE *fp, double *xs, double *ys)
+  {
+    char buf[MAXC];         /* buffer for reading each line */ 
+    size_t ncoeff = 0;      /* number of coefficient pairs read */
+    
+    while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
+      /* if it contains 2 double values */
+      if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
+	ncoeff++;       /* increment counter */
+    
+    return ncoeff;          /* return total count of pairs read */
+  }
+  
+  c->xs = (double *)malloc(sizeof(double)*(MAXC));
+  c->ys = (double *)malloc(sizeof(double)*(MAXC));    /* arrays of MAXC doubles */
+  size_t n = 0;                         /* count of doubles returned */
+  
+  /*Parse the cosmology kind*/
+  char cosmology_type[32] = {0};
+  char cosmology_tables_dir[64] = {0};
+
+  parser_get_param_string(params, "Cosmology:cosmology_type", cosmology_type);
+  parser_get_param_string(params, "Cosmology:cosmology_tables_dir", cosmology_tables_dir);
+  /* Read Hubble table */
+  FILE *fp = NULL;
+
+  if (strcmp(cosmology_type, "fQ")==0) {
+    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fq.txt"), "r");
+  } else if (strcmp(cosmology_type, "fQT")==0) {
+    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fqt.txt"), "r");
+  } else if (strcmp(cosmology_type, "fT")==0) {
+    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_ft.txt"), "r");
+  } else if (strcmp(cosmology_type, "fTT")==0) {
+    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_ftt.txt"), "r");
+  } else if (strcmp(cosmology_type, "fR")==0) {
+    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fr.txt"), "r");
+  } else {
+    error ("No such cosmology type exists!");
+  }
+
+  if (!fp)   /* validate file open for reading */
+    error ("file open failed");
+  
+  if (!(n = coefficients (fp, c->xs, c->ys))) {   /* validate coeff pairs read */
+    error("no double values read from file.");
+  }
+  fclose (fp);
+  
   /* Construct derived quantities */
 
   /* Dark-energy equation of state */
@@ -1504,7 +1513,7 @@ double cosmology_get_timebase(struct cosmology *c,
 
   /* Perform the integral */
   double result, abserr;
-  gsl_integration_qag(&F, a_start, a_end, 0, 1.0e-10, GSL_workspace_size,
+  gsl_integration_qag(&F, a_start, a_end, 0, 1.0e-4, GSL_workspace_size,
                       GSL_INTEG_GAUSS61, space, &result, &abserr);
 
   result /= (1LL << num_bins);

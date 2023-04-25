@@ -50,6 +50,7 @@
 
 /* This object's header. */
 #include "engine.h"
+#define MAXC 5000  
 
 /* Local headers. */
 #include "active.h"
@@ -2374,6 +2375,44 @@ int engine_step(struct engine *e) {
     cooling_update(e->cosmology, e->pressure_floor_props, e->cooling_func,
                    e->s);
 
+  /* Update effective gravitational constant */
+  double scale_factor_geff = e->cosmology->a;
+
+  double geff_func(double a, struct engine *e) {
+
+    
+  /* number of elements in the array */
+  const int count = MAXC;
+
+  int i;
+  
+  if (a < e->xs[0]) {
+    /* x is less than the minimum element
+     * handle error here if you want */
+    return e->ys[0]; /* return minimum element */
+  }
+  
+  if (a > e->xs[count-1]) {
+    return e->ys[count-1]; /* return maximum */
+  }
+  
+  /* find i, such that xs[i] <= x < xs[i+1] */
+  for (i = 0; i < count-1; i++) {
+    if (e->xs[i+1] > a) {
+      break;
+    }
+  }
+  
+  /* interpolate */
+  const double dx = e->xs[i+1] - e->xs[i];
+  const double dy = e->ys[i+1] - e->ys[i];
+   
+  
+  return e->ys[i] + (a - e->xs[i]) * dy / dx;  /* Lambda */
+  }
+
+  e->physical_constants->const_newton_G = e->physical_constants->const_newton_G * geff_func(scale_factor_geff,e);
+
   /* Update the softening lengths */
   if (e->policy & engine_policy_self_gravity)
     gravity_props_update(e->gravity_properties, e->cosmology);
@@ -3073,6 +3112,36 @@ void engine_init(
 
   /* Clean-up everything */
   bzero(e, sizeof(struct engine));
+
+  /* Initialise Geff(a) table and read it */
+
+  size_t coefficients (FILE *fp, double *xs, double *ys)
+  {
+    char buf[MAXC];         /* buffer for reading each line */ 
+    size_t ncoeff = 0;      /* number of coefficient pairs read */
+    
+    while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
+      /* if it contains 2 double values */
+      if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
+	ncoeff++;       /* increment counter */
+    
+    return ncoeff;          /* return total count of pairs read */
+  }
+  
+  e->xs = (double *)malloc(sizeof(double)*(MAXC));
+  e->ys = (double *)malloc(sizeof(double)*(MAXC));    /* arrays of MAXC doubles */
+  size_t n = 0;                         /* count of doubles returned */
+  
+  /* Read Hubble table */
+  FILE *fp = fopen ("geff_table.txt", "r");  
+  if (!fp)   /* validate file open for reading */
+    error ("file open failed");
+  
+  if (!(n = coefficients (fp, e->xs, e->ys))) {   /* validate coeff pairs read */
+    error("no double values read from file.");
+  }
+  fclose (fp);
+  
 
   /* Store the all values in the fields of the engine. */
   e->s = s;

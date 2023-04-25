@@ -498,7 +498,7 @@ struct engine {
   int verbose;
 
   /* Physical constants definition */
-  const struct phys_const *physical_constants;
+  struct phys_const *physical_constants;
 
   /* The cosmological model */
   struct cosmology *cosmology;
@@ -656,6 +656,11 @@ struct engine {
   /* Lightcone information */
   int flush_lightcone_maps;
 
+
+  /* Variables for Geff(a) interpolation table */
+  double *xs;
+  double *ys;
+  
 #ifdef SWIFT_GRAVITY_FORCE_CHECKS
   /* Run brute force checks only on steps when all gparts active? */
   int force_checks_only_all_active;

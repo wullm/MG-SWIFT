@@ -261,6 +261,10 @@ struct cosmology {
 
   /*! Massive neutrino density interpolation table at late times */
   double *neutrino_density_late_table;
+  
+  /*! Hubble function interpolation table variables */
+  double *xs;
+  double *ys;
 
   /*! Time between Big Bang and first entry in the table */
   double time_interp_table_offset;
