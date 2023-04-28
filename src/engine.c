@@ -50,7 +50,7 @@
 
 /* This object's header. */
 #include "engine.h"
-#define MAXC 5000  
+#define MAXC 50000 
 
 /* Local headers. */
 #include "active.h"
@@ -2375,10 +2375,11 @@ int engine_step(struct engine *e) {
     cooling_update(e->cosmology, e->pressure_floor_props, e->cooling_func,
                    e->s);
 
+  if(e->policy & engine_policy_self_gravity) {
   /* Update effective gravitational constant */
-  double scale_factor_geff = e->cosmology->a;
+  const double scale_factor_geff = e->cosmology->a;
 
-  double geff_func(double a, struct engine *e) {
+  double geff_func(const double a, struct engine *e) {
 
     
   /* number of elements in the array */
@@ -2411,8 +2412,9 @@ int engine_step(struct engine *e) {
   return e->ys[i] + (a - e->xs[i]) * dy / dx;  /* Lambda */
   }
 
-  e->physical_constants->const_newton_G = e->physical_constants->const_newton_G * geff_func(scale_factor_geff,e);
-
+  e->physical_constants->const_newton_G = 43.009201*geff_func(scale_factor_geff,e);
+  }
+  
   /* Update the softening lengths */
   if (e->policy & engine_policy_self_gravity)
     gravity_props_update(e->gravity_properties, e->cosmology);
@@ -3132,8 +3134,38 @@ void engine_init(
   e->ys = (double *)malloc(sizeof(double)*(MAXC));    /* arrays of MAXC doubles */
   size_t n = 0;                         /* count of doubles returned */
   
+  /*Parse the cosmology kind*/
+  char cosmology_type[32] = {0};
+  char cosmology_tables_dir[256] = {0};
+  char filepath[300] = {0};
+
+  parser_get_param_string(params, "Cosmology:cosmology_type", cosmology_type);
+  parser_get_param_string(params, "Cosmology:cosmology_tables_dir", cosmology_tables_dir);
+  
   /* Read Hubble table */
-  FILE *fp = fopen ("geff_table.txt", "r");  
+  FILE *fp;
+
+  if (strcmp(cosmology_type, "fQ")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"geff_table_fq.txt");
+  } else if (strcmp(cosmology_type, "fQT")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"geff_table_lcdm.txt");
+  } else if (strcmp(cosmology_type, "fT")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"geff_table_ft.txt");
+  } else if (strcmp(cosmology_type, "fTT")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"geff_table_lcdm.txt");
+  } else if (strcmp(cosmology_type, "fR")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"geff_table_fr.txt");
+  } else {
+    error ("No such cosmology type exists!");
+  }
+
+  fp = fopen(filepath,"r");
+  
   if (!fp)   /* validate file open for reading */
     error ("file open failed");
   

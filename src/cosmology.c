@@ -964,26 +964,35 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
   
   /*Parse the cosmology kind*/
   char cosmology_type[32] = {0};
-  char cosmology_tables_dir[64] = {0};
+  char cosmology_tables_dir[256] = {0};
+  char filepath[300] = {0};
 
   parser_get_param_string(params, "Cosmology:cosmology_type", cosmology_type);
   parser_get_param_string(params, "Cosmology:cosmology_tables_dir", cosmology_tables_dir);
+  
   /* Read Hubble table */
-  FILE *fp = NULL;
+  FILE *fp;
 
   if (strcmp(cosmology_type, "fQ")==0) {
-    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fq.txt"), "r");
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_fq.txt");
   } else if (strcmp(cosmology_type, "fQT")==0) {
-    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fqt.txt"), "r");
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_fqt.txt");
   } else if (strcmp(cosmology_type, "fT")==0) {
-    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_ft.txt"), "r");
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_ft.txt");
   } else if (strcmp(cosmology_type, "fTT")==0) {
-    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_ftt.txt"), "r");
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_ftt.txt");
   } else if (strcmp(cosmology_type, "fR")==0) {
-    FILE *fp = fopen (strcat(cosmology_tables_dir,"hubble_table_fr.txt"), "r");
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_fr.txt");
   } else {
     error ("No such cosmology type exists!");
   }
+
+  fp = fopen(filepath,"r");
 
   if (!fp)   /* validate file open for reading */
     error ("file open failed");
