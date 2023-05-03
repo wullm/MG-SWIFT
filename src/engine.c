@@ -3156,7 +3156,7 @@ void engine_init(
     strcat(filepath,"geff_table_ft.txt");
   } else if (strcmp(cosmology_type, "fTT")==0) {
     strcpy(filepath,cosmology_tables_dir);
-    strcat(filepath,"geff_table_lcdm.txt");
+    strcat(filepath,"geff_table_ftt.txt");
   } else if (strcmp(cosmology_type, "fR")==0) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_fr.txt");
