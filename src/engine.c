@@ -2412,7 +2412,7 @@ int engine_step(struct engine *e) {
   return e->ys[i] + (a - e->xs[i]) * dy / dx;  /* Lambda */
   }
 
-  e->physical_constants->const_newton_G = 43.009201*geff_func(scale_factor_geff,e);
+  e->physical_constants->const_newton_G = 43.00918*geff_func(scale_factor_geff,e);
   }
   
   /* Update the softening lengths */
