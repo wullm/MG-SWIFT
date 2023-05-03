@@ -23,7 +23,7 @@ Cosmology:
 
 # Parameters governing the time integration
 TimeIntegration:
-  dt_min:     1e-7
+  dt_min:     1e-8
   dt_max:     1e-2 
 
 # Parameters governing the snapshots
@@ -45,7 +45,7 @@ StructureFinding:
   basename:            fQ_haloes
   subdir_per_output:   stf
   output_list_on:      1
-  output_list:         ./output_list.txt
+  output_list:         ../../cosmology_tables/output_list.txt
   
 # Parameters governing the conserved quantities statistics
 Statistics:
@@ -80,7 +80,7 @@ InitialConditions:
 # Set up simulation restarts
 Restarts:
   delta_hours:      3.0
-  max_run_time:     24.0
+  max_run_time:     48.0
 
 LightconeCommon:
   subdir:            	  lightcones   # All lightcone output is written to this directory
