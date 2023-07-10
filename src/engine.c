@@ -3145,16 +3145,10 @@ void engine_init(
   /* Read Hubble table */
   FILE *fp;
 
-  if (strcmp(cosmology_type, "fQ")==0) {
-    strcpy(filepath,cosmology_tables_dir);
-    strcat(filepath,"geff_table_fq.txt");
-  } else if (strcmp(cosmology_type, "fQT")==0) {
-    strcpy(filepath,cosmology_tables_dir);
-    strcat(filepath,"geff_table_lcdm.txt");
-  } else if (strcmp(cosmology_type, "fT")==0) {
+  if (strcmp(cosmology_type, "fT")==0) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_ft.txt");
-  } else if (strcmp(cosmology_type, "fTT")==0) {
+   } else if (strcmp(cosmology_type, "fTT")==0) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_ftt.txt");
   } else if (strcmp(cosmology_type, "fR")==0) {
