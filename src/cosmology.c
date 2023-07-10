@@ -973,13 +973,7 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
   /* Read Hubble table */
   FILE *fp;
 
-  if (strcmp(cosmology_type, "fQ")==0) {
-    strcpy(filepath,cosmology_tables_dir);
-    strcat(filepath,"hubble_table_fq.txt");
-  } else if (strcmp(cosmology_type, "fQT")==0) {
-    strcpy(filepath,cosmology_tables_dir);
-    strcat(filepath,"hubble_table_fqt.txt");
-  } else if (strcmp(cosmology_type, "fT")==0) {
+  if (strcmp(cosmology_type, "fT")==0) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"hubble_table_ft.txt");
   } else if (strcmp(cosmology_type, "fTT")==0) {
