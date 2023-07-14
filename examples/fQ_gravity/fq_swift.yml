@@ -1,6 +1,6 @@
 # Define some meta-data about the simulation
 MetaData:
-  run_name:   f(Q) gravity simulation - 1280^3
+  run_name:   f(T,Lm) gravity simulation - 1024^3
 
 # Define the system of units to use internally. 
 InternalUnitSystem:
@@ -12,13 +12,13 @@ InternalUnitSystem:
 
 # Planck-13 cosmology
 Cosmology:
-  h:              0.7101
+  h:              0.6672
   a_begin:        0.0078125     # z_ini = 127
   a_end:          1.0      # z_end = 0
-  Omega_cdm:      0.2459736     # Cold Dark Matter density parameter
-  Omega_lambda:   0.71         # Dark-energy density parameter
-  Omega_b:        0.0440264     # Baryon density parameter
-  cosmology_type: fQ  		#Kind of modified gravity that we consider
+  Omega_cdm:      0.2778     # Cold Dark Matter density parameter
+  Omega_lambda:   0.6722         # Dark-energy density parameter
+  Omega_b:        0.05     # Baryon density parameter
+  cosmology_type: fTT  		#Kind of modified gravity that we consider
   cosmology_tables_dir: ../../cosmology_tables/
 
 # Parameters governing the time integration
@@ -28,25 +28,16 @@ TimeIntegration:
 
 # Parameters governing the snapshots
 Snapshots:
-  basename:            fQ_snapshot
+  basename:            fTT_snapshot
   output_list_on:      1
   output_list:         ../../cosmology_tables/output_list.txt
   invoke_ps:		   1
-  invoke_stf:		   1
 
 # Scheduler options
 Scheduler:
-  max_top_level_cells: 32
+  max_top_level_cells: 24
   cell_split_size:     200
 
-#Substructure finding on-fly
-StructureFinding:
-  config_file_name:    ../../cosmology_tables/velociraptor_config.cfg
-  basename:            fQ_haloes
-  subdir_per_output:   stf
-  output_list_on:      1
-  output_list:         ../../cosmology_tables/output_list.txt
-  
 # Parameters governing the conserved quantities statistics
 Statistics:
   delta_time:          1.02
@@ -66,39 +57,18 @@ Gravity:
   MAC:                  adaptive
   theta_cr:             0.7
   epsilon_fmm:          0.001
-  comoving_DM_softening:     0.0015625  # 1.5625 kpc = 1/50 mean inter-particle separation
-  max_physical_DM_softening: 0.0015625  # 1.5625 kpc = 1/50 mean inter-particle separation
+  comoving_DM_softening:     0.0019531  # 1.5625 kpc = 1/50 mean inter-particle separation
+  max_physical_DM_softening: 0.0019531  # 1.5625 kpc = 1/50 mean inter-particle separation
   mesh_side_length:     512
   
 # Parameters related to the initial conditions
 InitialConditions:
-  file_name:                   fQ_ics.hdf5
+  file_name:                   fTT_ics.hdf5
   periodic:                    1
   cleanup_h_factors:           0    
   cleanup_velocity_factors:    0
 
 # Set up simulation restarts
 Restarts:
-  delta_hours:      3.0
-  max_run_time:     48.0
-
-LightconeCommon:
-  subdir:            	  lightcones   # All lightcone output is written to this directory
-  z_range_for_DM:         [0.0, 1.4]  # Output redshift range for dark matter
-  max_particles_buffered: 100000  # Output particles if buffer size reaches this value
-  max_updates_buffered:   100000  # Flush map updates if buffer size reaches this value
-  hdf5_chunk_size:        16384   # Chunk size for HDF5 particle and healpix map datasets
-  nside:                  1024                    # Healpix resolution parameter
-  radius_file:            ../../cosmology_tables/shell_redshifts.txt  # Redshifts of shells for healpix maps
-  max_map_update_send_size_mb: 16.0            # Apply map updates over mutliple iterations to limit memory overhead
-  map_names_file:         ../../cosmology_tables/map_types.txt        # List of types of healpix maps to make
-  particles_lossy_compression: 0  # Apply lossy compression to lightcone particles
-  particles_gzip_level:        6  # Apply lossless (deflate) compression to lightcone particles
-  maps_gzip_level:             6  # Apply lossless (deflate) compression to healpix maps
-
-
-# Parameters specific to lightcone 0
-Lightcone0:
-  enabled: 1                                           # Enable this lightcone
-  basename: fQ_lightcone                                 # Base name of this lighcone's output files
-  observer_position: [35.561875, 35.561875, 35.561875] # Location of the observer in this lightcone
+  delta_hours:      5.0
+  max_run_time:     24.0
