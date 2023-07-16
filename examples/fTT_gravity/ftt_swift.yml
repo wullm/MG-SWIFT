@@ -10,7 +10,7 @@ InternalUnitSystem:
   UnitCurrent_in_cgs:  1             # Amperes
   UnitTemp_in_cgs:     1             # Kelvin
 
-# Planck-13 cosmology
+# CC+SN+BAO+CMB best-fit cosmology
 Cosmology:
   h:              0.6672
   a_begin:        0.0078125     # z_ini = 127
