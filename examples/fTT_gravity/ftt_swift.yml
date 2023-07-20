@@ -23,7 +23,7 @@ Cosmology:
 
 # Parameters governing the time integration
 TimeIntegration:
-  dt_min:     1e-8
+  dt_min:     1e-9
   dt_max:     1e-2 
 
 # Parameters governing the snapshots
