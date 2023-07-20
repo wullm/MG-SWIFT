@@ -71,4 +71,4 @@ InitialConditions:
 # Set up simulation restarts
 Restarts:
   delta_hours:      5.0
-  max_run_time:     24.0
+  max_run_time:     48.0
