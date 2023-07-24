@@ -63,7 +63,7 @@ Gravity:
   
 # Parameters related to the initial conditions
 InitialConditions:
-  file_name:                   fT_ics.hdf5
+  file_name:                   fR_ics.hdf5
   periodic:                    1
   cleanup_h_factors:           0    
   cleanup_velocity_factors:    0
