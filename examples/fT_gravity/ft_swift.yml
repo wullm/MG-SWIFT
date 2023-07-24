@@ -1,0 +1,75 @@
+# Define some meta-data about the simulation
+MetaData:
+  run_name:   f(T) gravity simulation - 1024^3
+
+# Define the system of units to use internally. 
+InternalUnitSystem:
+  UnitMass_in_cgs:     1.98848e43    # 10^10 M_sun
+  UnitLength_in_cgs:   3.08567758e24 # 1 Mpc
+  UnitVelocity_in_cgs: 1e5           # 1 km/s
+  UnitCurrent_in_cgs:  1             # Amperes
+  UnitTemp_in_cgs:     1             # Kelvin
+
+# CC+SN+BAO+CMB best-fit cosmology
+Cosmology:
+  h:              0.6853
+  a_begin:        0.0078125     # z_ini = 127
+  a_end:          1.0      # z_end = 0
+  Omega_cdm:      0.264     # Cold Dark Matter density parameter
+  Omega_lambda:   0.6888         # Dark-energy density parameter
+  Omega_b:        0.0472     # Baryon density parameter
+  cosmology_type: fT  		#Kind of modified gravity that we consider
+  cosmology_tables_dir: ../../cosmology_tables/
+
+# Parameters governing the time integration
+TimeIntegration:
+  dt_min:     1e-8
+  dt_max:     1e-2 
+
+# Parameters governing the snapshots
+Snapshots:
+  basename:            fT_snapshot
+  output_list_on:      1
+  output_list:         ../../cosmology_tables/output_list.txt
+  invoke_ps:		   1
+
+# Scheduler options
+Scheduler:
+  max_top_level_cells: 32
+  cell_split_size:     200
+
+# Parameters governing the conserved quantities statistics
+Statistics:
+  delta_time:          1.02
+  scale_factor_first:  0.0078125
+  
+# Power spectrum calculation options
+PowerSpectrum:
+  output_list_on:      1
+  output_list:         ../../cosmology_tables/output_list.txt
+  grid_side_length:    256
+  num_folds: 		   4
+  requested_spectra:   ["matter-matter"]
+
+# Parameters for the self-gravity scheme
+Gravity:
+  eta:                  0.025         
+  MAC:                  adaptive
+  theta_cr:             0.7
+  epsilon_fmm:          0.001
+  comoving_DM_softening:     0.0019531  # 1.9531 kpc = 1/50 mean inter-particle separation
+  max_physical_DM_softening: 0.0019531  # 1.9531 kpc = 1/50 mean inter-particle separation
+  mesh_side_length:     512
+  
+# Parameters related to the initial conditions
+InitialConditions:
+  file_name:                   fT_ics.hdf5
+  periodic:                    1
+  cleanup_h_factors:           0    
+  cleanup_velocity_factors:    0
+
+# Set up simulation restarts
+Restarts:
+  delta_hours:      5.0
+  max_run_time:     48.0
+
