@@ -1,0 +1,1 @@
+./configure --disable-compiler-warnings --disable-doxygen-doc --enable-debug --enable-debugging-checks --enable-mpi --with-tbbmalloc --enable-lightcone --with-gsl=/mnt/csoft/libraries/gsl-2.6 --with-chealpix=/mnt/home/project/csubhrat/Healpix_3.82 --with-cfitsio=/mnt/csoft/libraries/cfitsio-3.450 --with-parmetis=$HOME --with-fftw=$HOME
