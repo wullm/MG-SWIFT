@@ -3145,13 +3145,13 @@ void engine_init(
   /* Read Hubble table */
   FILE *fp;
 
-  if (strcmp(cosmology_type, "fT")==0) {
+  if ((strcmp(cosmology_type, "fT")==0) || (strcmp(cosmology_type, "fTnu")==0)) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_ft.txt");
-   } else if (strcmp(cosmology_type, "fTT")==0) {
+   } else if ((strcmp(cosmology_type, "fTT")==0) || (strcmp(cosmology_type, "fTTnu")==0)) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_ftt.txt");
-  } else if (strcmp(cosmology_type, "fR")==0) {
+  } else if ((strcmp(cosmology_type, "fR")==0) || (strcmp(cosmology_type, "fRnu")==0)) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"geff_table_fr.txt");
   } else {
