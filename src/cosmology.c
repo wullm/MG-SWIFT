@@ -982,6 +982,15 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
   } else if (strcmp(cosmology_type, "fR")==0) {
     strcpy(filepath,cosmology_tables_dir);
     strcat(filepath,"hubble_table_fr.txt");
+  } else if (strcmp(cosmology_type, "fTnu")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_ftnu.txt");
+  } else if (strcmp(cosmology_type, "fTTnu")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_fttnu.txt");
+  } else if (strcmp(cosmology_type, "fRnu")==0) {
+    strcpy(filepath,cosmology_tables_dir);
+    strcat(filepath,"hubble_table_frnu.txt");
   } else {
     error ("No such cosmology type exists!");
   }

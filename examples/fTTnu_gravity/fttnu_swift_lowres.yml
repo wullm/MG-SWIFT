@@ -23,7 +23,7 @@ Cosmology:
   T_nu_0:         1.9517578
   M_nu_eV:        0.08
   deg_nu:         3.0
-  cosmology_type: fTT  		#Kind of modified gravity that we consider
+  cosmology_type: fTTnu  		#Kind of modified gravity that we consider
   cosmology_tables_dir: ../../cosmology_tables/
 
 # Parameters governing the time integration
@@ -33,7 +33,7 @@ TimeIntegration:
 
 # Parameters governing the snapshots
 Snapshots:
-  basename:            fTT_snapshot
+  basename:            fTTnu_snapshot
   output_list_on:      1
   output_list:         ../../cosmology_tables/output_list.txt
   invoke_ps:		   1

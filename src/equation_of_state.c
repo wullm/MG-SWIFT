@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  * This file is part of SWIFT.
  * Copyright (c) 2017 Matthieu Schaller (schaller@strw.leidenuniv.nl)
