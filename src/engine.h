@@ -707,7 +707,7 @@ void engine_init(
     long long Nsinks, long long Nstars, long long Nblackholes,
     long long Nbackground_gparts, long long Nnuparts, int policy, int verbose,
     const struct unit_system *internal_units,
-    const struct phys_const *physical_constants, struct cosmology *cosmo,
+    struct phys_const *physical_constants, struct cosmology *cosmo,
     struct hydro_props *hydro,
     const struct entropy_floor_properties *entropy_floor,
     struct gravity_props *gravity, struct stars_props *stars,

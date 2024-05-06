@@ -2238,6 +2238,39 @@ void engine_init_particles(struct engine *e, int flag_entropy_ICs,
   if (e->verbose) message("took %.3f %s.", e->wallclock_time, clocks_getunit());
 }
 
+double geff_func(const double a, struct engine *e) {
+
+  
+/* number of elements in the array */
+const int count = MAXC;
+
+int i;
+
+if (a < e->xs[0]) {
+  /* x is less than the minimum element
+   * handle error here if you want */
+  return e->ys[0]; /* return minimum element */
+}
+
+if (a > e->xs[count-1]) {
+  return e->ys[count-1]; /* return maximum */
+}
+
+/* find i, such that xs[i] <= x < xs[i+1] */
+for (i = 0; i < count-1; i++) {
+  if (e->xs[i+1] > a) {
+    break;
+  }
+}
+
+/* interpolate */
+const double dx = e->xs[i+1] - e->xs[i];
+const double dy = e->ys[i+1] - e->ys[i];
+ 
+
+return e->ys[i] + (a - e->xs[i]) * dy / dx;  /* Lambda */
+}
+
 /**
  * @brief Let the #engine loose to compute the forces.
  *
@@ -2379,38 +2412,7 @@ int engine_step(struct engine *e) {
   /* Update effective gravitational constant */
   const double scale_factor_geff = e->cosmology->a;
 
-  double geff_func(const double a, struct engine *e) {
 
-    
-  /* number of elements in the array */
-  const int count = MAXC;
-
-  int i;
-  
-  if (a < e->xs[0]) {
-    /* x is less than the minimum element
-     * handle error here if you want */
-    return e->ys[0]; /* return minimum element */
-  }
-  
-  if (a > e->xs[count-1]) {
-    return e->ys[count-1]; /* return maximum */
-  }
-  
-  /* find i, such that xs[i] <= x < xs[i+1] */
-  for (i = 0; i < count-1; i++) {
-    if (e->xs[i+1] > a) {
-      break;
-    }
-  }
-  
-  /* interpolate */
-  const double dx = e->xs[i+1] - e->xs[i];
-  const double dy = e->ys[i+1] - e->ys[i];
-   
-  
-  return e->ys[i] + (a - e->xs[i]) * dy / dx;  /* Lambda */
-  }
 
   e->physical_constants->const_newton_G = 43.00918*geff_func(scale_factor_geff,e);
   }
@@ -3090,7 +3092,7 @@ void engine_init(
     long long Nsinks, long long Nstars, long long Nblackholes,
     long long Nbackground_gparts, long long Nnuparts, int policy, int verbose,
     const struct unit_system *internal_units,
-    const struct phys_const *physical_constants, struct cosmology *cosmo,
+    struct phys_const *physical_constants, struct cosmology *cosmo,
     struct hydro_props *hydro,
     const struct entropy_floor_properties *entropy_floor,
     struct gravity_props *gravity, struct stars_props *stars,
