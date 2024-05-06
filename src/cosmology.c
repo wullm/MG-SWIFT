@@ -157,23 +157,6 @@ __attribute__((const)) static INLINE double cosmology_dark_energy_EoS(
 }
 
 /**
- * @brief Computes the integral of the dark-energy equation of state
- * up to a scale-factor a.
- *
- * We follow the convention of Linder & Jenkins, MNRAS, 346, 573, 2003
- * and compute \f$ \tilde{w}(a) = \int_0^a\frac{1 + w(z)}{1+z}dz \f$.
- *
- * @param a The current scale-factor.
- * @param w0 The equation of state parameter at z=0.
- * @param wa The equation of state evolution parameter.
- */
-__attribute__((const)) static INLINE double w_tilde(const double a,
-                                                    const double w0,
-                                                    const double wa) {
-  return (a - 1.) * wa - (1. + w0 + wa) * log(a);
-}
-
-/**
  * @brief Compute \f$ E(z) \f$.
  *
  * @param Omega_r The radiation density parameter \f$ \Omega_r \f$.
