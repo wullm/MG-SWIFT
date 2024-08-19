@@ -3858,12 +3858,12 @@ void engine_struct_restore(struct engine *e, FILE *stream) {
                       "engine struct");
     
   e->xs =
-    (double *)swift_malloc("xs", engine->xs * sizeof(double));
-  restart_read_blocks((double *)engine->xs, MAXC,
+    (double *)swift_malloc("xs", MAXC * sizeof(double));
+  restart_read_blocks((double *)e->xs, MAXC,
                     1, stream, NULL, "x interp array");
   e->ys =
-    (double *)swift_malloc("ys", engine->ys * sizeof(double));
-  restart_read_blocks((double *)engine->ys, MAXC,
+    (double *)swift_malloc("ys", MAXC * sizeof(double));
+  restart_read_blocks((double *)e->ys, MAXC,
                     1, stream, NULL, "x interp array");
 
   /* Re-initializations as necessary for our struct and its members. */

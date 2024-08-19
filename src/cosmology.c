@@ -1666,10 +1666,10 @@ void cosmology_struct_dump(const struct cosmology *cosmology, FILE *stream) {
                          cosmology->N_nu, stream, "cosmology->deg_nu",
                          "neutrino degeneracies");
   }
-  restart_write_blocks((double *)c->xs, MAXC,
+  restart_write_blocks((double *)cosmology->xs, MAXC,
                         1, stream, "c->xs",
                         "x interp array");
-  restart_write_blocks((double *)e->ys, MAXC,
+  restart_write_blocks((double *)cosmology->ys, MAXC,
                         1, stream, "c->ys",
                         "y interp array");
 }
@@ -1687,12 +1687,12 @@ void cosmology_struct_restore(int enabled, struct cosmology *cosmology,
   restart_read_blocks((void *)cosmology, sizeof(struct cosmology), 1, stream,
                       NULL, "cosmology function");
 
-  c->xs =
-    (double *)swift_malloc("xs", cosmology->xs * sizeof(double));
+  cosmology->xs =
+    (double *)swift_malloc("xs", MAXC * sizeof(double));
   restart_read_blocks((double *)cosmology->xs, MAXC,
                     1, stream, NULL, "x interp array");
-  c->ys =
-    (double *)swift_malloc("ys", cosmology->ys * sizeof(double));
+  cosmology->ys =
+    (double *)swift_malloc("ys", MAXC * sizeof(double));
   restart_read_blocks((double *)cosmology->ys, MAXC,
                     1, stream, NULL, "x interp array");
 
