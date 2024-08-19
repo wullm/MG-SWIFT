@@ -854,6 +854,19 @@ void cosmology_init_tables(struct cosmology *c) {
 #endif
 }
 
+size_t cosmo_coefficients(FILE *fp, double *xs, double *ys)
+{
+  char buf[MAXC];         /* buffer for reading each line */ 
+  size_t ncoeff = 0;      /* number of coefficient pairs read */
+  
+  while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
+    /* if it contains 2 double values */
+    if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
+  ncoeff++;       /* increment counter */
+  
+  return ncoeff;          /* return total count of pairs read */
+}
+
 /**
  * @brief Initialises the #cosmology from the values read in the parameter file.
  *
@@ -927,19 +940,6 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
 
   if (c->a_begin >= c->a_end)
     error("a_begin must be strictly before (and not equal to) a_end");
-
-  size_t coefficients (FILE *fp, double *xs, double *ys)
-  {
-    char buf[MAXC];         /* buffer for reading each line */ 
-    size_t ncoeff = 0;      /* number of coefficient pairs read */
-    
-    while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
-      /* if it contains 2 double values */
-      if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
-	ncoeff++;       /* increment counter */
-    
-    return ncoeff;          /* return total count of pairs read */
-  }
   
   c->xs = (double *)malloc(sizeof(double)*(MAXC));
   c->ys = (double *)malloc(sizeof(double)*(MAXC));    /* arrays of MAXC doubles */
@@ -983,7 +983,7 @@ void cosmology_init(struct swift_params *params, const struct unit_system *us,
   if (!fp)   /* validate file open for reading */
     error ("file open failed");
   
-  if (!(n = coefficients (fp, c->xs, c->ys))) {   /* validate coeff pairs read */
+  if (!(n = cosmo_coefficients (fp, c->xs, c->ys))) {   /* validate coeff pairs read */
     error("no double values read from file.");
   }
   fclose (fp);

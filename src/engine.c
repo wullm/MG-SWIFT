@@ -3043,6 +3043,20 @@ void engine_numa_policies(int rank, int verbose) {
 #endif
 }
 
+/* Initialise Geff(a) table and read it */
+size_t coefficients (FILE *fp, double *xs, double *ys)
+{
+  char buf[MAXC];         /* buffer for reading each line */ 
+  size_t ncoeff = 0;      /* number of coefficient pairs read */
+  
+  while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
+    /* if it contains 2 double values */
+    if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
+  ncoeff++;       /* increment counter */
+  
+  return ncoeff;          /* return total count of pairs read */
+}
+
 /**
  * @brief init an engine struct with the necessary properties for the
  *        simulation.
@@ -3116,21 +3130,6 @@ void engine_init(
 
   /* Clean-up everything */
   bzero(e, sizeof(struct engine));
-
-  /* Initialise Geff(a) table and read it */
-
-  size_t coefficients (FILE *fp, double *xs, double *ys)
-  {
-    char buf[MAXC];         /* buffer for reading each line */ 
-    size_t ncoeff = 0;      /* number of coefficient pairs read */
-    
-    while (ncoeff < MAXC && fgets (buf, MAXC, fp))  /* read each line */
-      /* if it contains 2 double values */
-      if (sscanf (buf, "%lf %lf", &xs[ncoeff], &ys[ncoeff]) == 2)
-	ncoeff++;       /* increment counter */
-    
-    return ncoeff;          /* return total count of pairs read */
-  }
   
   e->xs = (double *)malloc(sizeof(double)*(MAXC));
   e->ys = (double *)malloc(sizeof(double)*(MAXC));    /* arrays of MAXC doubles */
