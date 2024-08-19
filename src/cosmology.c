@@ -1666,11 +1666,11 @@ void cosmology_struct_dump(const struct cosmology *cosmology, FILE *stream) {
                          cosmology->N_nu, stream, "cosmology->deg_nu",
                          "neutrino degeneracies");
   }
-  restart_write_blocks((double *)cosmology->xs, MAXC,
-                        1, stream, "c->xs",
+  restart_write_blocks((double *)cosmology->xs, sizeof(double),
+                        MAXC, stream, "c->xs",
                         "x interp array");
-  restart_write_blocks((double *)cosmology->ys, MAXC,
-                        1, stream, "c->ys",
+  restart_write_blocks((double *)cosmology->ys, sizeof(double),
+                        MAXC, stream, "c->ys",
                         "y interp array");
 }
 
@@ -1687,15 +1687,6 @@ void cosmology_struct_restore(int enabled, struct cosmology *cosmology,
   restart_read_blocks((void *)cosmology, sizeof(struct cosmology), 1, stream,
                       NULL, "cosmology function");
 
-  cosmology->xs =
-    (double *)swift_malloc("xs", MAXC * sizeof(double));
-  restart_read_blocks((double *)cosmology->xs, MAXC,
-                    1, stream, NULL, "x interp array");
-  cosmology->ys =
-    (double *)swift_malloc("ys", MAXC * sizeof(double));
-  restart_read_blocks((double *)cosmology->ys, MAXC,
-                    1, stream, NULL, "x interp array");
-
   /* Restore the neutrino mass and degeneracy arrays if necessary */
   if (cosmology->N_nu > 0) {
     cosmology->M_nu_eV =
@@ -1707,6 +1698,14 @@ void cosmology_struct_restore(int enabled, struct cosmology *cosmology,
     restart_read_blocks((double *)cosmology->deg_nu, sizeof(double),
                         cosmology->N_nu, stream, NULL, "neutrino degeneracies");
   }
+  cosmology->xs =
+    (double *)swift_malloc("xs", MAXC * sizeof(double));
+  restart_read_blocks((double *)cosmology->xs, sizeof(double),
+                    MAXC, stream, NULL, "x interp array");
+  cosmology->ys =
+    (double *)swift_malloc("ys", MAXC * sizeof(double));
+  restart_read_blocks((double *)cosmology->ys, sizeof(double),
+                    MAXC, stream, NULL, "x interp array");
 
   /* Re-initialise the tables if using a cosmology. */
   if (enabled) {

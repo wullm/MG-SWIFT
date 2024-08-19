@@ -3789,11 +3789,11 @@ void engine_struct_dump(struct engine *e, FILE *stream) {
   restart_write_blocks(e, sizeof(struct engine), 1, stream, "engine",
                        "engine struct");
 
-  restart_write_blocks((double *)e->xs, MAXC,
-                        1, stream, "e->xs",
+  restart_write_blocks((double *)e->xs, sizeof(double),
+                        MAXC, stream, "e->xs",
                         "x interp array");
-  restart_write_blocks((double *)e->ys, MAXC,
-                        1, stream, "e->ys",
+  restart_write_blocks((double *)e->ys, sizeof(double),
+                        MAXC, stream, "e->ys",
                         "y interp array");
 
   /* And all the engine pointed data, these use their own dump functions. */
@@ -3858,12 +3858,12 @@ void engine_struct_restore(struct engine *e, FILE *stream) {
     
   e->xs =
     (double *)swift_malloc("xs", MAXC * sizeof(double));
-  restart_read_blocks((double *)e->xs, MAXC,
-                    1, stream, NULL, "x interp array");
+  restart_read_blocks((double *)e->xs, sizeof(double),
+                    MAXC, stream, NULL, "x interp array");
   e->ys =
     (double *)swift_malloc("ys", MAXC * sizeof(double));
-  restart_read_blocks((double *)e->ys, MAXC,
-                    1, stream, NULL, "x interp array");
+  restart_read_blocks((double *)e->ys, sizeof(double),
+                    MAXC, stream, NULL, "x interp array");
 
   /* Re-initializations as necessary for our struct and its members. */
   e->sched.tasks = NULL;
