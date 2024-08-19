@@ -3863,7 +3863,7 @@ void engine_struct_restore(struct engine *e, FILE *stream) {
   e->ys =
     (double *)swift_malloc("ys", MAXC * sizeof(double));
   restart_read_blocks((double *)e->ys, sizeof(double),
-                    MAXC, stream, NULL, "x interp array");
+                    MAXC, stream, NULL, "y interp array");
 
   /* Re-initializations as necessary for our struct and its members. */
   e->sched.tasks = NULL;
